@@ -1,0 +1,6 @@
+const filterRecords=(records,{query='',vendor='',year='',ransomware=''}={})=>records.filter(r=>(!vendor||r.vendorProject===vendor)&&(!year||r.dateAdded.slice(0,4)===year)&&(!ransomware||r.knownRansomwareCampaignUse===ransomware)&&(!query||[r.cveID,r.vendorProject,r.product,r.vulnerabilityName,...(r.cwes||[])].join(' ').toLowerCase().includes(query.toLowerCase())));
+const counts=(records,key)=>Object.entries(records.reduce((m,r)=>{for(const v of (Array.isArray(r[key])?r[key]:[r[key]||'Unspecified']))m[v]=(m[v]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const csvCell=s=>'"'+String(s??'').replace(/^[=+@-]/,'\t$&').replace(/"/g,'""')+'"';
+const csvExport=records=>[['CVE','Vendor','Product','Date added','CISA due date','Known ransomware use','CWEs','Required action'],...records.map(r=>[r.cveID,r.vendorProject,r.product,r.dateAdded,r.dueDate,r.knownRansomwareCampaignUse,(r.cwes||[]).join('; '),r.requiredAction])].map(row=>row.map(csvCell).join(',')).join('\r\n');
+if(typeof module!=='undefined')module.exports={filterRecords,counts,escapeHTML,csvExport};
